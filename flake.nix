@@ -51,13 +51,17 @@
           src = inputs.mangaki-src;
         };
 
+        mangaki-env = callPackage ./pkgs/mangaki/env.nix { } {
+          src = inputs.mangaki-src;
+        };
+
       };
 
       # Provide some binary packages for selected system types.
       packages = forAllSystems (system:
         {
           inherit (nixpkgsFor.${system})
-            mangaki;
+            mangaki mangaki-env;
         });
 
       # The default package for 'nix build'. This makes sense if the
