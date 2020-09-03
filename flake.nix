@@ -1,5 +1,5 @@
 {
-  description = "(insert short project description here)";
+  description = "Mangaki flake";
 
   # Nixpkgs / NixOS version to use.
   inputs.nixpkgs = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-20.03"; };
@@ -8,14 +8,19 @@
   inputs.poetry2nix = { type = "github"; owner = "nix-community"; repo = "poetry2nix"; };
 
   # Upstream source tree(s).
-  inputs.hello-src = { url = git+https://git.savannah.gnu.org/git/hello.git; flake = false; };
-  inputs.gnulib-src = { url = git+https://git.savannah.gnu.org/git/gnulib.git; flake = false; };
+  inputs.mangaki-src = { type = "github"; owner = "mangaki"; repo = "mangaki"; flake = false; };
 
-  outputs = { self, nixpkgs, hello-src, gnulib-src }:
+  outputs = { self, nixpkgs, ... }@inputs:
     let
 
       # Generate a user-friendly version numer.
-      version = builtins.substring 0 8 hello-src.lastModifiedDate;
+      versions =
+        let
+          generateVersion = builtins.substring 0 8;
+        in
+        nixpkgs.lib.genAttrs
+          [ "mangaki" ]
+          (n: generateVersion inputs."${n}-src".lastModifiedDate);
 
       # System types to support.
       supportedSystems = [ "x86_64-linux" ];
@@ -31,24 +36,19 @@
     {
 
       # A Nixpkgs overlay.
-      overlay = final: prev: {
+      overlay = final: prev:
+      with final;
+      {
 
-        hello = with final; stdenv.mkDerivation rec {
-          name = "hello-${version}";
+        # Tools
 
-          src = hello-src;
+        inherit (inputs.poetry2nix.packages.${system})
+          poetry poetry2nix;
 
-          buildInputs = [ autoconf automake gettext gnulib perl gperf texinfo help2man ];
+        # Packages
 
-          preConfigure = ''
-            mkdir -p .git # force BUILD_FROM_GIT
-            ./bootstrap --gnulib-srcdir=${gnulib-src} --no-git --skip-po
-          '';
-
-          meta = {
-            homepage = "https://www.gnu.org/software/hello/";
-            description = "A program to show a familiar, friendly greeting";
-          };
+        mangaki = callPackage ./pkgs/mangaki { } {
+          src = inputs.mangaki-src;
         };
 
       };
@@ -56,13 +56,14 @@
       # Provide some binary packages for selected system types.
       packages = forAllSystems (system:
         {
-          inherit (nixpkgsFor.${system}) hello;
+          inherit (nixpkgsFor.${system})
+            mangaki;
         });
 
       # The default package for 'nix build'. This makes sense if the
       # flake provides only one package or there is a clear "main"
       # package.
-      defaultPackage = forAllSystems (system: self.packages.${system}.hello);
+      defaultPackage = forAllSystems (system: self.packages.${system}.mangaki);
 
       # A NixOS module, if applicable (e.g. if the package provides a system service).
       nixosModules.hello =
@@ -76,9 +77,7 @@
         };
 
       # Tests run by 'nix flake check' and by Hydra.
-      checks = forAllSystems (system: {
-        inherit (self.packages.${system}) hello;
-
+      checks = forAllSystems (system: self.packages.${system} // {
         # Additional tests, if applicable.
         test =
           with nixpkgsFor.${system};
