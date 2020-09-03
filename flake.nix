@@ -70,15 +70,7 @@
       defaultPackage = forAllSystems (system: self.packages.${system}.mangaki);
 
       # A NixOS module, if applicable (e.g. if the package provides a system service).
-      nixosModules.hello =
-        { pkgs, ... }:
-        {
-          nixpkgs.overlays = [ self.overlay ];
-
-          environment.systemPackages = [ pkgs.hello ];
-
-          #systemd.services = { ... };
-        };
+      nixosModules.mangaki = import ./modules/mangaki.nix;
 
       # Tests run by 'nix flake check' and by Hydra.
       checks = forAllSystems (system: self.packages.${system} // {
