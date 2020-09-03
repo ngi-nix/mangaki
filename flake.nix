@@ -2,7 +2,10 @@
   description = "(insert short project description here)";
 
   # Nixpkgs / NixOS version to use.
-  inputs.nixpkgs.url = "nixpkgs/nixos-20.03";
+  inputs.nixpkgs = { type = "github"; owner = "NixOS"; repo = "nixpkgs"; ref = "nixos-20.03"; };
+
+  # Unstable tools.
+  inputs.poetry2nix = { type = "github"; owner = "nix-community"; repo = "poetry2nix"; };
 
   # Upstream source tree(s).
   inputs.hello-src = { url = git+https://git.savannah.gnu.org/git/hello.git; flake = false; };
