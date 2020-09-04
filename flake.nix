@@ -116,46 +116,34 @@
 
       # Tests run by 'nix flake check' and by Hydra.
       checks = forAllSystems (system: self.packages.${system} // {
-        # Additional tests, if applicable.
-        test =
-          with nixpkgsFor.${system};
-          stdenv.mkDerivation {
-            name = "hello-test-${version}";
 
-            buildInputs = [ hello ];
-
-            unpackPhase = "true";
-
-            buildPhase = ''
-              echo 'running some integration tests'
-              [[ $(hello) = 'Hello, world!' ]]
-            '';
-
-            installPhase = "mkdir -p $out";
-          };
-
-        # A VM test of the NixOS module.
-        vmTest =
+        # A VM test on website availability.
+        mangaki-host-test =
           with import (nixpkgs + "/nixos/lib/testing-python.nix")
             {
               inherit system;
             };
 
           makeTest {
-            nodes = {
-              client = { ... }: {
-                imports = [ self.nixosModules.hello ];
-              };
+            nodes.client = { ... }: {
+              imports = [ self.nixosModules.mangaki ];
+              nixpkgs.overlays = [ self.overlay ];
+
+              services.mangaki.enable = true;
             };
 
             testScript =
               ''
                 start_all()
-                client.wait_for_unit("multi-user.target")
-                client.succeed("hello")
+
+                client.wait_for_unit("mangaki.service")
+                client.wait_for_open_port(8000)
+                client.succeed("curl http://localhost:8000")
+
+                client.shutdown()
               '';
           };
-      });
 
+      });
     };
 }
