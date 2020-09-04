@@ -41,6 +41,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    services.redis.enable = true;
+
     services.postgresql.enable = true;
     services.postgresql.ensureDatabases = [ "mangaki" ];
     services.postgresql.ensureUsers = [
@@ -56,7 +58,7 @@ in
       wantedBy = [ "multi-user.target" ];
 
       description = "Mangaki service";
-      path = [ mangakiEnv ]; # hack to get dev-dependencies
+      path = [ mangakiEnv ];
       environment.MANGAKI_SETTINGS_PATH = configFile;
 
       serviceConfig = {
