@@ -16,4 +16,8 @@ poetry2nix.mkPoetryApplication {
       });
 
     });
+
+  postPatch = ''
+    sed -i "s@FIXTURE_DIR.*@FIXTURE_DIR = '${src}/fixtures'@" mangaki/mangaki/settings.py
+  '';
 }
