@@ -41,6 +41,15 @@ in
       '';
     };
 
+    exposeConfiguration = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Whether or not to expose the configuration through $MANGAKI_ENV,
+        $MANGAKI_SOURCE, and $MANGAKI_SETTINGS_PATH
+      '';
+    };
+
     worker.enable = mkOption {
       type = types.bool;
       default = false;
@@ -51,6 +60,12 @@ in
   };
 
   config = mkMerge [
+    (mkIf (cfg.enable && cfg.exposeConfiguration) {
+      environment.variables.MANGAKI_ENV = toString mangakiEnv;
+      environment.variables.MANGAKI_SOURCE = toString pkgs.mangaki.src;
+      environment.variables.MANGAKI_SETTINGS_PATH = toString configFile;
+    })
+
     (mkIf (cfg.enable && cfg.worker.enable) {
       services.redis.enable = true;
 
