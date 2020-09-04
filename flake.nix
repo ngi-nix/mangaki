@@ -72,6 +72,50 @@
       # A NixOS module, if applicable (e.g. if the package provides a system service).
       nixosModules.mangaki = import ./modules/mangaki.nix;
 
+      # NixOS system configuration, if applicable
+      nixosConfigurations.mangaki = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux"; # Hardcoded
+        modules = [
+          # VM-specific configuration
+          ({ modulesPath, pkgs, ... }: {
+            imports = [ (modulesPath + "/virtualisation/qemu-vm.nix") ];
+            virtualisation.qemu.options = [ "-m 2G" "-vga virtio" ];
+            environment.systemPackages = with pkgs; [ st unzip ripgrep chromium ];
+
+            networking.hostName = "qemu_virtual";
+            networking.networkmanager.enable = true;
+
+            services.xserver.enable = true;
+            services.xserver.layout = "us";
+            services.xserver.windowManager.i3.enable = true;
+            services.xserver.displayManager.lightdm.enable = true;
+
+            users.mutableUsers = false;
+            users.users.user = {
+              password = "user"; # yes, very secure, I know
+              createHome = true;
+              isNormalUser = true;
+              extraGroups = [ "wheel" ];
+            };
+          })
+
+          # Flake specific support
+          ({ ... }: {
+            imports = [
+              self.nixosModules.mangaki
+            ];
+
+            nixpkgs.overlays = [ self.overlay ];
+          })
+
+          # Mangaki configuration
+          ({ ... }: {
+            security.sudo.enable = true;
+            services.mangaki.enable = true;
+          })
+        ];
+      };
+
       # Tests run by 'nix flake check' and by Hydra.
       checks = forAllSystems (system: self.packages.${system} // {
         # Additional tests, if applicable.
