@@ -108,8 +108,8 @@
 
           # Mangaki configuration
           ({ ... }: {
-            security.sudo.enable = true;
             services.mangaki.enable = true;
+            services.mangaki.exposeConfiguration = true;
           })
         ];
       };
