@@ -2,7 +2,7 @@
 { src }:
 
 poetry2nix.mkPoetryApplication {
-  inherit src; # prevents unnecessary sanitizing which causes problems
+  inherit src;# prevents unnecessary sanitizing which causes problems
   projectDir = src; # so it can find pyproject.toml and poetry.lock
   overrides = poetry2nix.overrides.withDefaults (final: prev:
     with final;

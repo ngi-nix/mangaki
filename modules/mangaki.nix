@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 
 with lib;
-
 let
   cfg = config.services.mangaki;
   pcfg = config.services.postgresql;
@@ -10,15 +9,18 @@ let
   # Why is it so hard to get dev-dependencies whilst including the project...
   mangakiEnv = pkgs.mangaki.python.withPackages (_: [ pkgs.mangaki ] ++ pkgs.mangaki-env.poetryPackages);
 
-  configSource = with generators; toINI {
-    mkKeyValue = mkKeyValueDefault {
-      # Not sure if this is a strict requirement but the default config come with true/false like this
-      mkValueString = v:
-        if true == v then "True"
-        else if false == v then "False"
-        else mkValueStringDefault {} v;
-    } "=";
-  } cfg.settings;
+  configSource = with generators; toINI
+    {
+      mkKeyValue = mkKeyValueDefault
+        {
+          # Not sure if this is a strict requirement but the default config come with true/false like this
+          mkValueString = v:
+            if true == v then "True"
+            else if false == v then "False"
+            else mkValueStringDefault { } v;
+        } "=";
+    }
+    cfg.settings;
   configFile = pkgs.writeText "settings.ini" configSource;
 in
 {
@@ -33,7 +35,7 @@ in
 
     settings = mkOption {
       type = types.attrs;
-      default = {};
+      default = { };
       description = ''
         Mangaki configuration
       '';
@@ -120,7 +122,8 @@ in
 
     services.mangaki.settings =
       let
-        mkDefaultRecFunc = (_: v: if isAttrs v
+        mkDefaultRecFunc = (_: v:
+          if isAttrs v
           then mkDefaultRec v
           else mkDefault v);
         mkDefaultRec = mapAttrs mkDefaultRecFunc; # broken with toINI

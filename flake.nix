@@ -12,7 +12,6 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
-
       # Generate a user-friendly version numer.
       versions =
         let
@@ -32,30 +31,29 @@
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
 
     in
-
     {
 
       # A Nixpkgs overlay.
       overlay = final: prev:
-      with final;
-      {
+        with final;
+        {
 
-        # Tools
+          # Tools
 
-        inherit (inputs.poetry2nix.packages.${system})
-          poetry poetry2nix;
+          inherit (inputs.poetry2nix.packages.${system})
+            poetry poetry2nix;
 
-        # Packages
+          # Packages
 
-        mangaki = callPackage ./pkgs/mangaki { } {
-          src = inputs.mangaki-src;
+          mangaki = callPackage ./pkgs/mangaki { } {
+            src = inputs.mangaki-src;
+          };
+
+          mangaki-env = callPackage ./pkgs/mangaki/env.nix { } {
+            src = inputs.mangaki-src;
+          };
+
         };
-
-        mangaki-env = callPackage ./pkgs/mangaki/env.nix { } {
-          src = inputs.mangaki-src;
-        };
-
-      };
 
       # Provide some binary packages for selected system types.
       packages = forAllSystems (system:
@@ -138,9 +136,10 @@
 
         # A VM test of the NixOS module.
         vmTest =
-          with import (nixpkgs + "/nixos/lib/testing-python.nix") {
-            inherit system;
-          };
+          with import (nixpkgs + "/nixos/lib/testing-python.nix")
+            {
+              inherit system;
+            };
 
           makeTest {
             nodes = {
