@@ -18,6 +18,9 @@ poetry2nix.mkPoetryApplication {
     });
 
   postPatch = ''
-    sed -i "s@FIXTURE_DIR.*@FIXTURE_DIR = '${src}/fixtures'@" mangaki/mangaki/settings.py
+    sed -i \
+      -e "s@\(BASE_DIR = \).*@\1'${src}'@" \
+      -e "s@os.path.join(BASE_DIR, 'settings.ini')@'/etc/mangaki/settings.ini'@" \
+      mangaki/mangaki/settings.py
   '';
 }
