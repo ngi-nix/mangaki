@@ -12,6 +12,7 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
+
       # Generate a user-friendly version numer.
       versions =
         let
@@ -138,6 +139,42 @@
 
                 client.wait_for_unit("mangaki.service")
                 client.wait_for_open_port(8000)
+                client.succeed("curl http://localhost:8000")
+
+                client.shutdown()
+              '';
+          };
+
+        # A VM test on populating internal database.
+        mangaki-database-test =
+          with import (nixpkgs + "/nixos/lib/testing-python.nix")
+            {
+              inherit system;
+            };
+
+          makeTest {
+            nodes.client = { ... }: {
+              imports = [ self.nixosModules.mangaki ];
+              nixpkgs.overlays = [ self.overlay ];
+
+              services.mangaki.enable = true;
+              services.mangaki.exposeConfiguration = true;
+            };
+
+            testScript =
+              ''
+                start_all()
+
+                client.wait_for_open_port(8000)
+                client.succeed(
+                    "sudo -u mangaki $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py loaddata $MANGAKI_SOURCE/fixtures/{partners,seed_data}.json"
+                )
+                client.succeed(
+                    "sudo -u mangaki $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py ranking"
+                )
+                client.succeed(
+                    "sudo -u mangaki $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py top --all"
+                )
                 client.succeed("curl http://localhost:8000")
 
                 client.shutdown()
