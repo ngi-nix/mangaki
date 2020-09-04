@@ -72,11 +72,15 @@ in
       };
 
       preStart = ''
-        # Create required exists if they don't exist
-        ${pkgs.sudo}/bin/sudo -u ${pcfg.superUser} ${pcfg.package}/bin/psql \
-          -d mangaki -c \
-          "create extension if not exists pg_trgm; \
-           create extension if not exists unaccent"
+        if [ ! -f state.initialized ]; then
+          # Create required exists if they don't exist
+          ${pkgs.sudo}/bin/sudo -u ${pcfg.superUser} ${pcfg.package}/bin/psql \
+            -d mangaki -c \
+            "create extension if not exists pg_trgm; \
+            create extension if not exists unaccent"
+
+          touch state.initialized
+        fi
       '';
 
       script = ''
