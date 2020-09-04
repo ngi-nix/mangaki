@@ -19,10 +19,9 @@ result/bin/run-qemu_virtual-vm
 
 # Load test data
 ## Yes, I know these commands look terrible, but that's how it works based off what I've found it...
-## $MANGAKI_SETTINGS_PATH needs to be passed this way because sudo creates a new shell that doesn't respect the envs
-sudo -u mangaki MANGAKI_SETTINGS_PATH="$MANGAKI_SETTINGS_PATH" $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py loaddata $MANGAKI_SOURCE/fixtures/{partners,seed_data}.json
-sudo -u mangaki MANGAKI_SETTINGS_PATH="$MANGAKI_SETTINGS_PATH" $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py ranking
-sudo -u mangaki MANGAKI_SETTINGS_PATH="$MANGAKI_SETTINGS_PATH" $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py top --all
+sudo -u mangaki $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py loaddata $MANGAKI_SOURCE/fixtures/{partners,seed_data}.json
+sudo -u mangaki $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py ranking
+sudo -u mangaki $MANGAKI_ENV/bin/python $MANGAKI_ENV/lib/python*/site-packages/mangaki/manage.py top --all
 
 # Load `localhost:8000` in Chromium
 chromium &
