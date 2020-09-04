@@ -59,7 +59,7 @@
       packages = forAllSystems (system:
         {
           inherit (nixpkgsFor.${system})
-            mangaki mangaki-env;
+            mangaki;
         });
 
       # The default package for 'nix build'. This makes sense if the

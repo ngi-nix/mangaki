@@ -17,7 +17,6 @@ jobs:
           - nixos-20.03
         package:
           - mangaki
-          - mangaki-env
 
     steps:
       - name: obtain maximum storage
