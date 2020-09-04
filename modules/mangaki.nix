@@ -61,9 +61,11 @@ in
 
   config = mkMerge [
     (mkIf (cfg.enable && cfg.exposeConfiguration) {
-      environment.variables.MANGAKI_ENV = toString mangakiEnv;
-      environment.variables.MANGAKI_SOURCE = toString pkgs.mangaki.src;
-      environment.variables.MANGAKI_SETTINGS_PATH = toString configFile;
+      environment.variables.MANGAKI_ENV = mangakiEnv.outPath;
+      environment.variables.MANGAKI_SOURCE = pkgs.mangaki.src.outPath;
+      environment.variables.MANGAKI_SETTINGS_PATH = configFile.outPath;
+
+      environment.etc."mangaki/settings.ini".source = configFile;
     })
 
     (mkIf (cfg.enable && cfg.worker.enable) {
