@@ -12,7 +12,6 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
-
       # Generate a user-friendly version numer.
       versions =
         let
